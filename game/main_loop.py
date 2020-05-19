@@ -3,12 +3,13 @@ import time
 import random
 import os
 
-WIDTH, HEIGHT = 1024, 768
+WIDTH, HEIGHT = 1024, 680
 TILE_SIZE = 24
 GRID_WIDTH = WIDTH / TILE_SIZE
 GRID_HEIGHT = HEIGHT / TILE_SIZE
 CHAR_WIDTH, CHAR_HEIGHT = 80, 160
 LIGHTGREY = (169, 169, 169)
+WHITE = (255, 255, 255)
 BG = pygame.transform.scale(pygame.image.load(os.path.join("png", "BG.png")), (WIDTH, HEIGHT))
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wanted Ranger")
@@ -34,13 +35,14 @@ class Character(character):
         self.mask = pygame.mask.from_surface(self.character_img)
         self.max_health = health
 
-
 def main():
     runnable = True
     FPS = 60
+    isJump = False
+    jumpCount = 10
+    VELOCITY = TILE_SIZE / 2
     clock = pygame.time.Clock()
-    character = Character(240, 200)
-    VELOCITY = TILE_SIZE
+    character = Character(240, 438)
 
     def draw_grid():
         for x in range(0, WIDTH, TILE_SIZE):
@@ -54,25 +56,33 @@ def main():
         draw_grid()
         pygame.display.update()
 
-    def player_movement():
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and character.x - VELOCITY > 0: #left
-            character.x -= VELOCITY
-        if keys[pygame.K_d] and character.x + VELOCITY < WIDTH - CHARACTER_IMAGE.get_width(): #right
-            character.x += VELOCITY
-        if keys[pygame.K_w] and character.y - VELOCITY > 0: #up
-            character.y -= VELOCITY
-        if keys[pygame.K_s] and character.y + VELOCITY < HEIGHT - CHARACTER_IMAGE.get_height(): #down
-            character.y += VELOCITY
-
     while runnable:
         clock.tick(FPS)
         redraw_window()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 runnable = False
 
-        player_movement()
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_a] and character.x - VELOCITY > 0: #left
+            character.x -= VELOCITY
+        if keys[pygame.K_d] and character.x + VELOCITY < WIDTH - CHARACTER_IMAGE.get_width(): #right
+            character.x += VELOCITY
+
+        if not(isJump):
+            if keys[pygame.K_SPACE]:
+                isJump = True
+        else:
+            if jumpCount >= -10:
+                neg = 1
+                if jumpCount < 0:
+                    neg = -1
+                character.y -= (jumpCount ** 2) * 0.3 * neg
+                jumpCount -= 1
+            else:
+                isJump = False
+                jumpCount = 10
+
 
 main()
